@@ -10,10 +10,33 @@
             --bg-color: #f8f9fa; --panel-bg: #ffffff; --border-color: #dee2e6;
             --primary-color: #4a69bd; --secondary-color: #6c757d; --header-bg: #2f3542;
             --text-color: #212529; --input-bg: #f1f3f5; --success-color: #1abc9c;
+            --bg-color: #f4f7f9;
+            --panel-bg: #ffffff;
+            --border-color: #e0e6ed;
+            --primary-color: #007bff;
+            --primary-color-dark: #0056b3;
+            --secondary-color: #6c757d;
+            --header-bg: #ffffff;
+            --header-text: #343a40;
+            --text-color: #343a40;
+            --input-bg: #ffffff;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         * { box-sizing: border-box; }
         body, html { margin: 0; padding: 0; height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: var(--bg-color); color: var(--text-color); overflow: hidden; }
         header { background-color: var(--header-bg); color: white; padding: 15px 30px; font-size: 1.3rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+        body, html { margin: 0; padding: 0; height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: var(--bg-color); color: var(--text-color); overflow: hidden; font-size: 16px; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #aaa; }
+
+        header { background-color: var(--header-bg); color: var(--header-text); padding: 12px 30px; font-size: 1.2rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); box-shadow: var(--shadow-sm); z-index: 10; }
         .main-container { display: flex; height: calc(100vh - 61px); width: 100%; }
         .panel { display: flex; flex-direction: column; overflow: hidden; }
         #editor-panel { flex: 0 0 400px; background-color: var(--panel-bg); border-right: 1px solid var(--border-color); }
@@ -21,32 +44,69 @@
         #final-code-panel { flex: 0 0 400px; background-color: var(--panel-bg); border-left: 1px solid var(--border-color); }
         .panel-header { padding: 15px 20px; border-bottom: 1px solid var(--border-color); background-color: #fdfdff; }
         .panel-header h2 { margin: 0; font-size: 1.1rem; }
+        .panel-header { padding: 15px 20px; border-bottom: 1px solid var(--border-color); background-color: #fcfdff; }
+        .panel-header h2 { margin: 0; font-size: 1.05rem; font-weight: 600; color: var(--header-text); }
         .panel-content { padding: 20px; overflow-y: auto; flex-grow: 1; }
-        #preview-iframe { width: 375px; height: 90%; max-height: 812px; border: 12px solid #111; border-radius: 40px; background-color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        #preview-iframe { width: 100%; max-width: 375px; height: 90%; max-height: 812px; border: 12px solid #111; border-radius: 40px; background-color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        #preview-iframe { width: 100%; max-width: 375px; height: 90%; max-height: 812px; border: 12px solid #111; border-radius: 40px; background-color: white; box-shadow: var(--shadow-md); }
         #final-code-output { width: 100%; height: 100%; border: none; font-family: 'SF Mono', 'Courier New', monospace; font-size: 0.85rem; resize: none; background-color: #2d2d2d; color: #f1f1f1; padding: 15px; }
 
-        #input-container { flex: 0 0 25%; min-height: 150px; display: flex; flex-direction: column; }
-        #input-html { width: 100%; flex-grow: 1; border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; font-family: 'SF Mono', 'Courier New', monospace; font-size: 0.9rem; resize: none; background-color: var(--input-bg); }
+        #input-container { display: flex; flex-direction: column; }
+        #input-html { width: 100%; height: 150px; border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; font-family: 'SF Mono', 'Courier New', monospace; font-size: 0.9rem; resize: vertical; background-color: var(--input-bg); }
+        #input-html { width: 100%; height: 150px; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; font-family: 'SF Mono', 'Courier New', monospace; font-size: 0.9rem; resize: vertical; background-color: var(--input-bg); transition: border-color 0.2s, box-shadow 0.2s; }
+        #input-html:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2); }
         #dynamic-form-container { flex: 1 1 auto; overflow-y: auto; padding-top: 15px;}
         .button-group { display: flex; gap: 10px; margin-top: 10px; }
         button { padding: 8px 15px; border: none; border-radius: 6px; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+        button { padding: 10px 18px; border: none; border-radius: 6px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
         #copy-btn { background-color: var(--success-color); color: white; }
         #reset-btn { background-color: #e74c3c; color: white; }
         details { border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 15px; overflow: hidden; }
         summary { font-weight: 600; padding: 12px 15px; cursor: pointer; background-color: #f7f7f9; user-select: none; }
+        #copy-btn:hover { background-color: #218838; }
+        #reset-btn { background-color: var(--danger-color); color: white; }
+        #reset-btn:hover { background-color: #c82333; }
+        details { border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 15px; overflow: hidden; background-color: var(--panel-bg); transition: box-shadow 0.2s; }
+        details[open] { box-shadow: var(--shadow-sm); }
+        summary { font-weight: 600; padding: 12px 15px; cursor: pointer; background-color: #f8f9fa; user-select: none; position: relative; }
+        summary::after { content: '›'; position: absolute; right: 15px; top: 50%; transform: translateY(-50%) rotate(90deg); font-size: 1.4rem; color: var(--secondary-color); transition: transform 0.2s; }
+        details[open] > summary::after { transform: translateY(-50%) rotate(-90deg); }
         .fieldset-content { padding: 15px; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 6px; font-size: 0.9rem; color: var(--secondary-color); text-transform: capitalize; font-weight: 500;}
         .form-group input, .form-group textarea { width: 100%; padding: 8px 12px; border: 1px solid #ced4da; border-radius: 5px; font-size: 1rem; }
+        .form-group label { display: block; margin-bottom: 8px; font-size: 0.85rem; color: var(--secondary-color); text-transform: capitalize; font-weight: 600;}
+        .form-group input[type="text"], .form-group textarea { width: 100%; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 6px; font-size: 0.95rem; background-color: var(--input-bg); transition: border-color 0.2s, box-shadow 0.2s; }
+        .form-group input[type="text"]:focus, .form-group textarea:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2); }
         .form-group input[type="color"] { padding: 0; height: 38px; border: none; background: none; }
         .gallery-editor ul { list-style: none; padding: 0; margin: 0; }
         .gallery-editor li { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 6px; background-color: #f8f9fa; margin-bottom: 8px; }
+        .gallery-editor li { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 6px; background-color: #f8f9fa; margin-bottom: 8px; border: 1px solid var(--border-color); }
         .gallery-editor img { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color); }
         .gallery-editor input { flex-grow: 1; }
         .gallery-editor .remove-btn { background-color: #dc3545; color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-weight: bold; }
         .gallery-editor .add-btn { width: 100%; margin-top: 10px; background-color: var(--primary-color); color: white;}
         .status-message { text-align: center; padding: 20px; color: var(--secondary-color); }
-        @media (max-width: 1200px) { .main-container { flex-direction: column; } #editor-panel, #final-code-panel { flex: 0 0 50%; border: none; } #preview-panel { order: -1; } }
+        .gallery-editor .remove-btn { background-color: var(--danger-color); color: white; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-weight: bold; flex-shrink: 0; }
+        .gallery-editor .remove-btn:hover { background-color: #c82333; }
+        .gallery-editor .add-btn { width: 100%; margin-top: 10px; background-color: var(--primary-color); color: white; }
+        .gallery-editor .add-btn:hover { background-color: var(--primary-color-dark); }
+        .status-message { text-align: center; padding: 30px 20px; color: var(--secondary-color); background-color: #f8f9fa; border-radius: 8px; border: 1px dashed var(--border-color); }
+        
+        /* Tablet Layout */
+        @media (max-width: 1200px) {
+            body, html { overflow: auto; }
+            .main-container { flex-direction: column; height: auto; }
+            #editor-panel, #final-code-panel, #preview-panel { flex: 1 1 auto; border: none; }
+            #preview-panel { order: -1; padding: 20px 0; }
+            #preview-iframe { height: 667px; /* Ukuran tinggi iPhone 8 */ }
+        }
+
+        /* Mobile Layout */
+        @media (max-width: 768px) {
+            header { flex-direction: column; gap: 15px; padding: 15px; height: auto; }
+            .main-container { height: auto; }
+        }
     </style>
 </head>
 <body>
@@ -313,6 +373,19 @@
                             const regex = new RegExp(`(const\\s+${key}\\s*=\\s*['"])(.*?)(['"])`, "g");
                             updatedHtml = updatedHtml.replace(regex, `$1${advancedSettings[key]}$3`);
                         }
+
+                        // Penanganan untuk <title>
+                        if (key === 'pageTitle') {
+                            const titleRegex = new RegExp(`(<title>)(.*?)(<\\/title>)`, 'i');
+                            updatedHtml = updatedHtml.replace(titleRegex, `$1${advancedSettings[key]}$3`);
+                        }
+
+                        // Penanganan untuk meta tags
+                        if (key.startsWith('meta_')) {
+                            const metaProperty = key.substring(5);
+                            const metaRegex = new RegExp(`(<meta[^>]*?(?:property|name)=['"]${metaProperty}['"][^>]*?content=['"])(.*?)(['"])`, 'i');
+                            updatedHtml = updatedHtml.replace(metaRegex, `$1${advancedSettings[key]}$3`);
+                        }
                     }
 
                     outputIframe.srcdoc = updatedHtml;
@@ -370,6 +443,20 @@
                 const audioTagMatch = originalHtml.match(audioTagRegex);
                 if (audioTagMatch && audioTagMatch[1]) {
                     advancedSettings['musicUrlFromAudio'] = audioTagMatch[1];
+                }
+
+                // 4. Regex untuk menemukan <title>
+                const titleRegex = /<title>(.*?)<\/title>/i;
+                const titleMatch = originalHtml.match(titleRegex);
+                if (titleMatch && titleMatch[1]) {
+                    advancedSettings['pageTitle'] = titleMatch[1];
+                }
+
+                // 5. Regex untuk menemukan semua meta tag dengan property atau name
+                const metaRegex = /<meta[^>]*?(?:property|name)=['"](.*?)['"][^>]*?content=['"](.*?)['"]/gi;
+                while ((match = metaRegex.exec(originalHtml)) !== null) {
+                    const key = `meta_${match[1]}`; // e.g., meta_og:title
+                    if (!advancedSettings[key]) advancedSettings[key] = match[2];
                 }
             };
             
