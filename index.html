@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor Undangan Interaktif</title>
+    <style>
+        :root {
+            --bg-color: #f4f7f9;
+            --panel-bg: #ffffff;
+            --border-color: #e0e5eb;
+            --primary-color: #0d6efd;
+            --secondary-color: #6c757d;
+            --header-bg: #343a40;
+            --text-color: #212529;
+            --input-bg: #f8f9fa;
+        }
+        * { box-sizing: border-box; }
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow: hidden;
+        }
+        header {
+            background-color: var(--header-bg);
+            color: white;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        .main-container {
+            display: flex;
+            height: calc(100vh - 58px);
+            width: 100%;
+        }
+        .panel {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        #control-panel {
+            background-color: var(--panel-bg);
+            border-right: 1px solid var(--border-color);
+        }
+        #output-panel {
+            background-color: var(--bg-color);
+        }
+        h2 {
+            margin-top: 0;
+            color: var(--header-bg);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+        textarea {
+            width: 100%;
+            flex-grow: 1;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            resize: none;
+            background-color: var(--input-bg);
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        button:active { transform: scale(0.98); }
+        #process-btn {
+            background-color: var(--primary-color);
+            color: white;
+            flex-grow: 1;
+        }
+        #copy-btn {
+            background-color: #198754;
+            color: white;
+        }
+        .form-container {
+            margin-top: 20px;
+            border-top: 2px solid var(--border-color);
+            padding-top: 20px;
+            flex-shrink: 0;
+        }
+        .form-fieldset {
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .form-fieldset legend {
+            font-weight: 600;
+            padding: 0 10px;
+            color: var(--primary-color);
+        }
+        .form-group {
+            margin-bottom: 12px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: var(--secondary-color);
+            text-transform: capitalize;
+        }
+        .form-group input, .form-group textarea.form-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 1rem;
+            background-color: white;
+        }
+        .form-group textarea.form-input {
+            min-height: 80px;
+            resize: vertical;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .placeholder {
+            text-align: center;
+            color: #aaa;
+            padding: 40px 20px;
+            border: 2px dashed var(--border-color);
+            border-radius: 6px;
+        }
+        @media (max-width: 900px) {
+            .main-container { flex-direction: column; }
+            #control-panel { border-right: none; }
+        }
+    </style>
+</head>
+<body>
+    <header>Editor Undangan Interaktif</header>
+    <div class="main-container">
+        <div id="control-panel" class="panel">
+            <h2>1. Panel Kontrol</h2>
+            <textarea id="input-html" placeholder="Tempelkan seluruh kode HTML undangan Anda di sini..."></textarea>
+            <div class="button-group">
+                <button id="process-btn">Proses Kode & Tampilkan Form Edit</button>
+            </div>
+            <div id="dynamic-form-container" class="form-container">
+                 <div class="placeholder">Form untuk mengedit akan muncul di sini setelah kode diproses.</div>
+            </div>
+        </div>
+        <div id="output-panel" class="panel">
+            <h2>2. Hasil HTML (Siap Salin)</h2>
+            <textarea id="output-html" readonly placeholder="Kode HTML yang sudah diedit akan muncul di sini..."></textarea>
+            <div class="button-group">
+                <button id="copy-btn">Salin Kode</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const processBtn = document.getElementById('process-btn');
+        const copyBtn = document.getElementById('copy-btn');
+        const inputHtmlEl = document.getElementById('input-html');
+        const outputHtmlEl = document.getElementById('output-html');
+        const formContainer = document.getElementById('dynamic-form-container');
+
+        let originalHtml = '';
+        let invitationData = {};
+
+        processBtn.addEventListener('click', () => {
+            originalHtml = inputHtmlEl.value;
+            if (!originalHtml) {
+                alert('Silakan tempelkan kode HTML terlebih dahulu.');
+                return;
+            }
+
+            const regex = /const invitationData = ({[\s\S]*?});/;
+            const match = originalHtml.match(regex);
+
+            if (!match || !match[1]) {
+                alert('Tidak dapat menemukan objek "invitationData" di dalam kode. Pastikan strukturnya benar.');
+                return;
+            }
+            
+            try {
+                // Menggunakan Function constructor lebih aman untuk mengevaluasi objek JS dari string
+                invitationData = new Function(`return ${match[1]}`)();
+                generateForm(invitationData, formContainer);
+                updateOutputHtml();
+            } catch (e) {
+                alert('Terjadi kesalahan saat memproses data undangan: ' + e.message);
+                console.error(e);
+            }
+        });
+        
+        copyBtn.addEventListener('click', () => {
+            if (outputHtmlEl.value) {
+                navigator.clipboard.writeText(outputHtmlEl.value)
+                    .then(() => {
+                        const originalText = copyBtn.textContent;
+                        copyBtn.textContent = 'Tersalin!';
+                        setTimeout(() => { copyBtn.textContent = originalText; }, 2000);
+                    })
+                    .catch(err => alert('Gagal menyalin: ' + err));
+            }
+        });
+
+        function generateForm(obj, container) {
+            container.innerHTML = ''; // Bersihkan form lama
+            buildFormRecursive(obj, container);
+        }
+
+        function buildFormRecursive(currentObj, parentEl, path = []) {
+            for (const key in currentObj) {
+                const value = currentObj[key];
+                const currentPath = [...path, key];
+
+                if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+                    const fieldset = document.createElement('fieldset');
+                    fieldset.className = 'form-fieldset';
+                    const legend = document.createElement('legend');
+                    legend.textContent = key;
+                    fieldset.appendChild(legend);
+                    parentEl.appendChild(fieldset);
+                    buildFormRecursive(value, fieldset, currentPath);
+                } else {
+                    const group = document.createElement('div');
+                    group.className = 'form-group';
+                    
+                    const label = document.createElement('label');
+                    label.textContent = key.replace(/([A-Z])/g, ' $1').trim(); // ubah camelCase menjadi Title Case
+                    
+                    let input;
+                    const dataPath = currentPath.join('.');
+
+                    if (Array.isArray(value)) {
+                         input = document.createElement('textarea');
+                         input.value = value.join('\n');
+                         input.rows = value.length > 3 ? value.length : 4;
+                         label.textContent += ' (Satu URL per baris)';
+                    } else if (String(value).length > 80) {
+                        input = document.createElement('textarea');
+                        input.value = value;
+                        input.rows = 3;
+                    }
+                    else {
+                        input = document.createElement('input');
+                        input.type = 'text';
+                        input.value = value;
+                    }
+                    
+                    input.className = 'form-input';
+                    input.dataset.path = dataPath;
+                    input.addEventListener('input', handleFormInput);
+
+                    group.appendChild(label);
+                    group.appendChild(input);
+                    parentEl.appendChild(group);
+                }
+            }
+        }
+
+        function handleFormInput(event) {
+            const path = event.target.dataset.path.split('.');
+            let value = event.target.value;
+
+            // Jika ini adalah textarea untuk array, ubah kembali menjadi array
+            if (event.target.tagName === 'TEXTAREA' && event.target.dataset.path.includes('images.')) {
+                 value = value.split('\n').map(line => line.trim()).filter(line => line);
+            }
+
+            // Update objek invitationData secara mendalam
+            let current = invitationData;
+            for (let i = 0; i < path.length - 1; i++) {
+                current = current[path[i]];
+            }
+            current[path[path.length - 1]] = value;
+            
+            updateOutputHtml();
+        }
+
+        function updateOutputHtml() {
+            // Ubah objek JS kembali menjadi string dengan format yang rapi
+            const newObjectString = JSON.stringify(invitationData, null, 4);
+            const newScriptContent = `const invitationData = ${newObjectString};`;
+            
+            // Ganti blok invitationData lama dengan yang baru di dalam kode HTML asli
+            const updatedHtml = originalHtml.replace(
+                /const invitationData = ({[\s\S]*?});/, 
+                newScriptContent
+            );
+            
+            outputHtmlEl.value = updatedHtml;
+        }
+    </script>
+</body>
+</html>```
+
+### Petunjuk Penggunaan
+
+1.  **Simpan Kode:** Simpan kode di atas sebagai file `editor.html` di komputer Anda.
+2.  **Buka di Browser:** Klik dua kali file tersebut untuk membukanya di Google Chrome, Firefox, atau browser modern lainnya.
+3.  **Salin Template Anda:** Buka file HTML undangan Anda, pilih semua isinya (`Ctrl+A` atau `Cmd+A`), lalu salin (`Ctrl+C` atau `Cmd+C`).
+4.  **Tempel di Editor:** Kembali ke halaman `editor.html` di browser, lalu tempelkan kode yang sudah Anda salin ke dalam kotak **"1. Panel Kontrol"**.
+5.  **Proses Kode:** Klik tombol **"Proses Kode & Tampilkan Form Edit"**.
+6.  **Edit Data:** Sebuah form akan muncul di bawah tombol tersebut. Ubah semua data yang Anda inginkan, seperti nama, tanggal, URL gambar, dll.
+7.  **Lihat Hasil Live:** Sambil Anda mengetik di form, kode di panel **"2. Hasil HTML (Siap Salin)"** akan otomatis ter-update.
+8.  **Salin Kode Final:** Jika sudah selesai, klik tombol **"Salin Kode"**.
+9.  **Selesai:** Kode HTML undangan yang sudah jadi kini ada di clipboard Anda, siap untuk di-hosting atau disimpan sebagai file `.html` baru.
