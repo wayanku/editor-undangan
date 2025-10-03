@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -298,11 +299,16 @@
 
                     // Ganti juga nilai pengaturan lanjutan
                     for (const key in advancedSettings) {
-                        if (key === 'musicUrl') {
+                        if (key === 'musicUrlFromSource') {
                             // Penanganan khusus untuk mengganti src pada tag audio
-                            const musicRegex = new RegExp(`(<source\\s+src=['"])(.*?)(['"]\\s+type=['"]audio\\/mpeg['"])`, 'i');
+                            const musicRegex = new RegExp(`(<source\\s+src=['"])(.*?)(['"]\\s+type=['"]audio\\/.*?['"])`, 'i');
                             updatedHtml = updatedHtml.replace(musicRegex, `$1${advancedSettings[key]}$3`);
-                        } else {
+                        } else if (key === 'musicUrlFromAudio') {
+                            // Penanganan khusus untuk mengganti src pada tag audio
+                            const audioTagRegex = new RegExp(`(<audio[^>]*?\\s+src=['"])(.*?)(['"])`, 'i');
+                            updatedHtml = updatedHtml.replace(audioTagRegex, `$1${advancedSettings[key]}$3`);
+                        }
+                        else {
                             // Penanganan umum untuk variabel const
                             const regex = new RegExp(`(const\\s+${key}\\s*=\\s*['"])(.*?)(['"])`, "g");
                             updatedHtml = updatedHtml.replace(regex, `$1${advancedSettings[key]}$3`);
@@ -352,11 +358,18 @@
                     if (!advancedSettings[match[1]]) advancedSettings[match[1]] = match[2];
                 }
 
-                // 2. Regex untuk menemukan link musik di tag <source>
-                const musicRegex = /<source\s+src=['"](.*?)['"]\s+type=['"]audio\/mpeg['"]/i;
+                // 2. Regex untuk menemukan link musik di tag <source type="audio/*">
+                const musicRegex = /<source\s+src=['"](.*?)['"]\s+type=['"]audio\/.*?['"]/i;
                 const musicMatch = originalHtml.match(musicRegex);
                 if (musicMatch && musicMatch[1]) {
-                    advancedSettings['musicUrl'] = musicMatch[1];
+                    advancedSettings['musicUrlFromSource'] = musicMatch[1];
+                }
+
+                // 3. Regex untuk menemukan link musik di tag <audio src="...">
+                const audioTagRegex = /<audio[^>]*?\s+src=['"](.*?)['"]/i;
+                const audioTagMatch = originalHtml.match(audioTagRegex);
+                if (audioTagMatch && audioTagMatch[1]) {
+                    advancedSettings['musicUrlFromAudio'] = audioTagMatch[1];
                 }
             };
             
